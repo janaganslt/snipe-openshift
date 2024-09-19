@@ -3,16 +3,16 @@
 namespace Tests\Feature\Notifications\Email;
 
 use PHPUnit\Framework\Attributes\Group;
-use App\Events\CheckoutableCheckedIn;
+use App\Events\CheckoutableCheckedOut;
 use App\Models\Asset;
 use App\Models\User;
-use App\Notifications\CheckinAssetNotification;
+use App\Notifications\CheckoutAssetNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 #[Group('notifications')]
-class EmailNotificationsUponCheckinTest extends TestCase
+class EmailNotificationsUponCheckoutTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -21,64 +21,63 @@ class EmailNotificationsUponCheckinTest extends TestCase
         Notification::fake();
     }
 
-    public function testCheckInEmailSentToUserIfSettingEnabled()
+    public function testCheckOutEmailSentToUserIfSettingEnabled()
     {
         $user = User::factory()->create();
         $asset = Asset::factory()->assignedToUser($user)->create();
 
         $asset->model->category->update(['checkin_email' => true]);
 
-        $this->fireCheckInEvent($asset, $user);
+        $this->fireCheckOutEvent($asset, $user);
 
         Notification::assertSentTo(
             $user,
-            function (CheckinAssetNotification $notification, $channels) {
+            function (CheckOutAssetNotification $notification, $channels) {
                 return in_array('mail', $channels);
             },
         );
     }
 
-    public function testCheckInEmailNotSentToUserIfSettingDisabled()
+    public function testCheckOutEmailNotSentToUserIfSettingDisabled()
     {
         $user = User::factory()->create();
         $asset = Asset::factory()->assignedToUser($user)->create();
 
-        $asset->model->category->update(['checkin_email' => false]);
+        $asset->model->category->update(['checkin_email' => false]); //this is a 0 so the setting IS disabled
 
-        $this->fireCheckInEvent($asset, $user);
+        $this->fireCheckOutEvent($asset, $user);
 
         Notification::assertNotSentTo(
             $user,
-            function (CheckinAssetNotification $notification, $channels) {
+            function (CheckOutAssetNotification $notification, $channels) {
                 return in_array('mail', $channels);
             }
         );
     }
 
-    public function testCheckInEmailSentToAdminIfUserEmailNull()
-    {
+    public function testCheckOutEmailSentToAdminIfUserEmailNull() {
         $this->settings->enableCCEmail("test@snipetest.io");
 
         $user = User::factory()->create(["email"=>null]);
         $asset = Asset::factory()->create();
-        $asset->model->category->update(['checkin_email' => true]);
+        $asset->model->category->update(['checkout_email' => true]);
 
-        $this->fireCheckInEvent($asset, $user);
+        $this->fireCheckOutEvent($asset, $user);
 
         Notification::assertSentOnDemand(
-            CheckinAssetNotification::class,
-            function (CheckinAssetNotification $notification, $channels, AnonymousNotifiable $notifiable) {
+            CheckoutAssetNotification::class,
+            function (CheckoutAssetNotification $notification, $channels, AnonymousNotifiable $notifiable) {
                 return $notifiable->routes['mail'] === 'test@snipetest.io';
             }
         );
     }
 
-    private function fireCheckInEvent($asset, $user): void
+    private function fireCheckOutEvent($asset, $user): void
     {
-        event(new CheckoutableCheckedIn(
+        event(new CheckoutableCheckedOut(
             $asset,
             $user,
-            User::factory()->checkinAssets()->create(),
+            User::factory()->checkoutAssets()->create(),
             ''
         ));
     }
