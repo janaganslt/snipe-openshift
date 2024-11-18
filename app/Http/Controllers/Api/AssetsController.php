@@ -736,7 +736,7 @@ class AssetsController extends Controller
                     }
                 }
             }
-            if ($asset->save()) {
+        if ($asset->save()) { //kerplow - this is blowing *something* up?
                 if (($request->filled('assigned_user')) && ($target = User::find($request->get('assigned_user')))) {
                         $location = $target->location_id;
                 } elseif (($request->filled('assigned_asset')) && ($target = Asset::find($request->get('assigned_asset')))) {
