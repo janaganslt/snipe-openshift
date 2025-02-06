@@ -83,6 +83,10 @@ $qr_size = ($settings->alt_barcode_enabled=='1') && ($settings->label2_1d_type!=
     .next-padding {
         margin: {{ $settings->labels_pmargin_top }}in {{ $settings->labels_pmargin_right }}in {{ $settings->labels_pmargin_bottom }}in {{ $settings->labels_pmargin_left }}in;
     }
+
+    .qr-warning {
+        color: red;
+    }
     @media print {
         .noprint {
             display: none !important;
@@ -105,6 +109,12 @@ $qr_size = ($settings->alt_barcode_enabled=='1') && ($settings->label2_1d_type!=
         {!! $snipeSettings->show_custom_css() !!}
     @endif
 </style>
+@if ($settings->qr_code=='1' && ($settings->label2_2d_type == 'none'))
+    <div class="qr-warning">
+        <p></p>
+        {{ __('admin/settings/general.label_qr_setting_invalid') }}
+    </div>
+@endif
 
 @foreach ($assets as $asset)
     <?php $count++; ?>
