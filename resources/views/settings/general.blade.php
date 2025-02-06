@@ -419,7 +419,7 @@
     </div> <!-- /.col-md-8-->
 
 
-    {{ Form::close() }}
+    </form>
 
 @stop
 
