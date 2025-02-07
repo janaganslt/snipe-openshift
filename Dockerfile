@@ -93,8 +93,10 @@ WORKDIR /var/www/html
 #copy all configuration files
 # COPY docker/*.php /var/www/html/app/config/production/
 COPY docker/docker.env /var/www/html/.env
-
+RUN chgrp -R 0 /var/www/html
+RUN chmod -R g=u /var/www/html
 RUN chown -R docker /var/www/html
+
 
 RUN \
 	rm -r "/var/www/html/storage/private_uploads" && ln -fs "/var/lib/snipeit/data/private_uploads" "/var/www/html/storage/private_uploads" \
